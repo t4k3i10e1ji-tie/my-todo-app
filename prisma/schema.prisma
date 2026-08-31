@@ -5,6 +5,8 @@ model Todo {
   userId      Uuid              @map("user_id")
   title       String
   isCompleted Boolean           @default(false) @map("is_completed")
+  dueDate     TimestamptzString? @map("due_date")
+  priority    Int?
   createdAt   TimestamptzString @default(now()) @map("created_at")
 
   @@map("todos")

@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ada0b0d5f5231aea36b93700b582f811a81440d1b706a6fca1e4184b723acd83'>;
+  StorageHashBase<'e01f759f6ed1acc8424993e50c5d14e09bddea4c6b2375b1b9e91a92dd9dd3e9'>;
 export type ExecutionHash =
   ExecutionHashBase<'00ac1d5e9e28221ae6dcddbda38165110580246f09e6105a888507be62d69ccb'>;
 export type ProfileHash =
@@ -246,6 +246,8 @@ export type FieldOutputTypes = {
       readonly userId: CodecTypes['pg/uuid@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly isCompleted: CodecTypes['pg/bool@1']['output'];
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly priority: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
   };
@@ -257,6 +259,8 @@ export type FieldInputTypes = {
       readonly userId: CodecTypes['pg/uuid@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly isCompleted: CodecTypes['pg/bool@1']['input'];
+      readonly dueDate: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly priority: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
   };
@@ -265,8 +269,10 @@ export type StorageColumnTypes = {
   readonly public: {
     readonly todos: {
       readonly created_at: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly due_date: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly is_completed: CodecTypes['pg/bool@1']['output'];
+      readonly priority: CodecTypes['pg/int4@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly user_id: CodecTypes['pg/uuid@1']['output'];
     };
@@ -276,8 +282,10 @@ export type StorageColumnInputTypes = {
   readonly public: {
     readonly todos: {
       readonly created_at: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly due_date: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly is_completed: CodecTypes['pg/bool@1']['input'];
+      readonly priority: CodecTypes['pg/int4@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly user_id: CodecTypes['pg/uuid@1']['input'];
     };
@@ -327,6 +335,16 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
                 };
+                readonly due_date: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                };
+                readonly priority: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
                 readonly created_at: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -374,6 +392,17 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
               };
+              readonly dueDate: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly priority: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -391,6 +420,8 @@ type ContractBase = Omit<
                 readonly userId: { readonly column: 'user_id' };
                 readonly title: { readonly column: 'title' };
                 readonly isCompleted: { readonly column: 'is_completed' };
+                readonly dueDate: { readonly column: 'due_date' };
+                readonly priority: { readonly column: 'priority' };
                 readonly createdAt: { readonly column: 'created_at' };
               };
             };

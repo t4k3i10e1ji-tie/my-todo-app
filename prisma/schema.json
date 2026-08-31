@@ -22,6 +22,13 @@
                   "kind": "scalar"
                 }
               },
+              "dueDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -33,6 +40,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "priority": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -57,11 +71,17 @@
                 "createdAt": {
                   "column": "created_at"
                 },
+                "dueDate": {
+                  "column": "due_date"
+                },
                 "id": {
                   "column": "id"
                 },
                 "isCompleted": {
                   "column": "is_completed"
+                },
+                "priority": {
+                  "column": "priority"
                 },
                 "title": {
                   "column": "title"
@@ -94,6 +114,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "due_date": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
@@ -107,6 +132,11 @@
                   },
                   "nativeType": "bool",
                   "nullable": false
+                },
+                "priority": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "title": {
                   "codecId": "pg/text@1",
@@ -134,7 +164,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ada0b0d5f5231aea36b93700b582f811a81440d1b706a6fca1e4184b723acd83"
+    "storageHash": "e01f759f6ed1acc8424993e50c5d14e09bddea4c6b2375b1b9e91a92dd9dd3e9"
   },
   "execution": {
     "executionHash": "00ac1d5e9e28221ae6dcddbda38165110580246f09e6105a888507be62d69ccb",
