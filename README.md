@@ -44,6 +44,12 @@ A todo app built with Next.js, Supabase (auth + Postgres), and Prisma.
 - `npm run lint` — run ESLint
 - `npm run contract:emit` — emit the Prisma contract
 
+## Deployment
+
+Deployed on Vercel: https://my-todo-app-coral-nine.vercel.app
+
+Pushes to `main` deploy automatically.
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
