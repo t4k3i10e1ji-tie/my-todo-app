@@ -4,7 +4,9 @@ import { db } from "@/prisma/db";
 import type { ApiErrorResponse, TodoDto } from "@/app/api/todos/route";
 
 export type UpdateTodoRequest = {
-  isCompleted: boolean;
+  isCompleted?: boolean;
+  dueDate?: string | null;
+  priority?: number | null;
 };
 
 export type UpdateTodoResponse = {
@@ -45,9 +47,45 @@ export async function PATCH(
     return NextResponse.json(body, { status: 404 });
   }
 
-  await db.orm.public.Todo.where({ id: existing.id, userId: user.id }).update({
-    isCompleted: requestBody.isCompleted,
-  });
+  if (
+    requestBody.dueDate != null &&
+    Number.isNaN(new Date(requestBody.dueDate).getTime())
+  ) {
+    const body: ApiErrorResponse = { error: "Invalid dueDate" };
+    return NextResponse.json(body, { status: 400 });
+  }
+
+  if (
+    requestBody.priority != null &&
+    !Number.isInteger(requestBody.priority)
+  ) {
+    const body: ApiErrorResponse = { error: "Invalid priority" };
+    return NextResponse.json(body, { status: 400 });
+  }
+
+  const updateData: Partial<{
+    isCompleted: boolean;
+    dueDate: string | null;
+    priority: number | null;
+  }> = {};
+  if (requestBody.isCompleted !== undefined) {
+    updateData.isCompleted = requestBody.isCompleted;
+  }
+  if (requestBody.dueDate !== undefined) {
+    updateData.dueDate = requestBody.dueDate;
+  }
+  if (requestBody.priority !== undefined) {
+    updateData.priority = requestBody.priority;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    const body: ApiErrorResponse = { error: "No fields to update" };
+    return NextResponse.json(body, { status: 400 });
+  }
+
+  await db.orm.public.Todo.where({ id: existing.id, userId: user.id }).update(
+    updateData,
+  );
 
   const updated = await db.orm.public.Todo.first({ id });
 
@@ -56,6 +94,8 @@ export async function PATCH(
       id: updated!.id,
       title: updated!.title,
       isCompleted: updated!.isCompleted,
+      dueDate: updated!.dueDate,
+      priority: updated!.priority,
       createdAt: updated!.createdAt,
     },
   };
