@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type {
   CreateTodoRequest,
   CreateTodoResponse,
@@ -17,12 +18,37 @@ import type {
 
 const PRIORITY_LABELS: Record<number, string> = { 1: "低", 2: "中", 3: "高" };
 
+const DUE_YEAR_OPTIONS = Array.from(
+  { length: 6 },
+  (_, i) => new Date().getFullYear() + i,
+);
+const DUE_MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+const DUE_HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => i);
+const DUE_MINUTE_OPTIONS = [0, 15, 30, 45];
+
+function daysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+
+function pad2(value: number) {
+  return String(value).padStart(2, "0");
+}
+
 function formatDueDate(dueDate: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
+  const date = new Date(dueDate);
+  const datePart = new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date(dueDate));
+  }).format(date);
+  const weekday = new Intl.DateTimeFormat("ja-JP", {
+    weekday: "short",
+  }).format(date);
+  const timePart = new Intl.DateTimeFormat("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+  return `${datePart}(${weekday}) ${timePart}`;
 }
 
 function priorityBadgeClass(priority: number) {
@@ -40,7 +66,11 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState("");
   const [todos, setTodos] = useState<TodoDto[]>([]);
   const [newTitle, setNewTitle] = useState("");
-  const [newDueDate, setNewDueDate] = useState("");
+  const [newDueYear, setNewDueYear] = useState("");
+  const [newDueMonth, setNewDueMonth] = useState("");
+  const [newDueDay, setNewDueDay] = useState("");
+  const [newDueHour, setNewDueHour] = useState("");
+  const [newDueMinute, setNewDueMinute] = useState("");
   const [newPriority, setNewPriority] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,10 +119,17 @@ export default function Home() {
     if (!title) return;
 
     setError(null);
+    const hasDueDate = newDueYear && newDueMonth && newDueDay;
     const requestBody: CreateTodoRequest = {
       title,
-      dueDate: newDueDate
-        ? new Date(`${newDueDate}T00:00:00`).toISOString()
+      dueDate: hasDueDate
+        ? new Date(
+            Number(newDueYear),
+            Number(newDueMonth) - 1,
+            Number(newDueDay),
+            newDueHour ? Number(newDueHour) : 0,
+            newDueMinute ? Number(newDueMinute) : 0,
+          ).toISOString()
         : null,
       priority: newPriority ? Number(newPriority) : null,
     };
@@ -110,8 +147,32 @@ export default function Home() {
     const data: CreateTodoResponse = await res.json();
     setTodos((prev) => [data.todo, ...prev]);
     setNewTitle("");
-    setNewDueDate("");
+    setNewDueYear("");
+    setNewDueMonth("");
+    setNewDueDay("");
+    setNewDueHour("");
+    setNewDueMinute("");
     setNewPriority("");
+  }
+
+  function handleDueYearChange(value: string) {
+    setNewDueYear(value);
+    if (value && newDueMonth && newDueDay) {
+      const maxDay = daysInMonth(Number(value), Number(newDueMonth));
+      if (Number(newDueDay) > maxDay) {
+        setNewDueDay(String(maxDay));
+      }
+    }
+  }
+
+  function handleDueMonthChange(value: string) {
+    setNewDueMonth(value);
+    if (newDueYear && value && newDueDay) {
+      const maxDay = daysInMonth(Number(newDueYear), Number(value));
+      if (Number(newDueDay) > maxDay) {
+        setNewDueDay(String(maxDay));
+      }
+    }
   }
 
   async function handleToggle(todo: TodoDto) {
@@ -164,6 +225,7 @@ export default function Home() {
           My TODO App
         </h1>
         <div className="flex min-w-0 items-center gap-3">
+          <ThemeToggle />
           <span className="max-w-[40vw] truncate text-sm text-zinc-600 dark:text-zinc-400 sm:max-w-none">
             {userEmail}
           </span>
@@ -193,17 +255,92 @@ export default function Home() {
               placeholder="新しい TODO を入力"
               className="w-full rounded-lg border border-black/[.08] bg-white px-3 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
             />
-            <div className="flex gap-2">
-              <input
-                type="date"
-                value={newDueDate}
-                onChange={(e) => setNewDueDate(e.target.value)}
-                className="w-full rounded-lg border border-black/[.08] bg-white px-3 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
-              />
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={newDueYear}
+                onChange={(e) => handleDueYearChange(e.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+              >
+                <option value="">年</option>
+                {DUE_YEAR_OPTIONS.map((year) => (
+                  <option key={year} value={year}>
+                    {year}年
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newDueMonth}
+                onChange={(e) => handleDueMonthChange(e.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+              >
+                <option value="">月</option>
+                {DUE_MONTH_OPTIONS.map((month) => (
+                  <option key={month} value={month}>
+                    {month}月
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newDueDay}
+                onChange={(e) => setNewDueDay(e.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+              >
+                <option value="">日</option>
+                {Array.from(
+                  {
+                    length:
+                      newDueYear && newDueMonth
+                        ? daysInMonth(Number(newDueYear), Number(newDueMonth))
+                        : 31,
+                  },
+                  (_, i) => i + 1,
+                ).map((day) => (
+                  <option key={day} value={day}>
+                    {day}日
+                  </option>
+                ))}
+              </select>
+              {newDueYear && newDueMonth && newDueDay && (
+                <span className="flex items-center text-sm text-zinc-500 dark:text-zinc-400">
+                  (
+                  {new Intl.DateTimeFormat("ja-JP", { weekday: "short" }).format(
+                    new Date(
+                      Number(newDueYear),
+                      Number(newDueMonth) - 1,
+                      Number(newDueDay),
+                    ),
+                  )}
+                  )
+                </span>
+              )}
+              <select
+                value={newDueHour}
+                onChange={(e) => setNewDueHour(e.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+              >
+                <option value="">時</option>
+                {DUE_HOUR_OPTIONS.map((hour) => (
+                  <option key={hour} value={hour}>
+                    {pad2(hour)}時
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newDueMinute}
+                onChange={(e) => setNewDueMinute(e.target.value)}
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+              >
+                <option value="">分</option>
+                {DUE_MINUTE_OPTIONS.map((minute) => (
+                  <option key={minute} value={minute}>
+                    {pad2(minute)}分
+                  </option>
+                ))}
+              </select>
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value)}
-                className="shrink-0 rounded-lg border border-black/[.08] bg-white px-3 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
+                className="rounded-lg border border-black/[.08] bg-white px-2 py-2 text-black outline-none focus:border-zinc-950 dark:border-white/[.145] dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-50"
               >
                 <option value="">優先度なし</option>
                 <option value="1">低</option>
