@@ -6,6 +6,8 @@ export type TodoDto = {
   id: string;
   title: string;
   isCompleted: boolean;
+  dueDate: string | null;
+  priority: number | null;
   createdAt: string;
 };
 
@@ -15,6 +17,8 @@ export type ListTodosResponse = {
 
 export type CreateTodoRequest = {
   title: string;
+  dueDate?: string | null;
+  priority?: number | null;
 };
 
 export type CreateTodoResponse = {
@@ -45,6 +49,8 @@ export async function GET() {
       id: todo.id,
       title: todo.title,
       isCompleted: todo.isCompleted,
+      dueDate: todo.dueDate,
+      priority: todo.priority,
       createdAt: todo.createdAt,
     })),
   };
@@ -77,9 +83,27 @@ export async function POST(request: Request) {
     return NextResponse.json(body, { status: 400 });
   }
 
+  if (
+    requestBody.dueDate != null &&
+    Number.isNaN(new Date(requestBody.dueDate).getTime())
+  ) {
+    const body: ApiErrorResponse = { error: "Invalid dueDate" };
+    return NextResponse.json(body, { status: 400 });
+  }
+
+  if (
+    requestBody.priority != null &&
+    !Number.isInteger(requestBody.priority)
+  ) {
+    const body: ApiErrorResponse = { error: "Invalid priority" };
+    return NextResponse.json(body, { status: 400 });
+  }
+
   const todo = await db.orm.public.Todo.create({
     userId: user.id,
     title,
+    dueDate: requestBody.dueDate ?? null,
+    priority: requestBody.priority ?? null,
   });
 
   const response: CreateTodoResponse = {
@@ -87,6 +111,8 @@ export async function POST(request: Request) {
       id: todo.id,
       title: todo.title,
       isCompleted: todo.isCompleted,
+      dueDate: todo.dueDate,
+      priority: todo.priority,
       createdAt: todo.createdAt,
     },
   };
