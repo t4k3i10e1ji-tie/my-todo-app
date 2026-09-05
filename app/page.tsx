@@ -82,7 +82,6 @@ export default function Home() {
       return;
     }
     const data: ListTodosResponse = await res.json();
-      console.log("一覧データ:", data.todos);
     setTodos(data.todos);
   }, []);
 
@@ -208,7 +207,7 @@ export default function Home() {
       setTodos((prev) => prev.filter((t) => t.id !== todo.id));
     }
   }
-  console.log("一覧データ:", todos);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
