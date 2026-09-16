@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Practice() {
-  const [count, setCount] = useState(0);
-  const [message, setMessage] = useState("");
+  const [todos, setTodos] = useState([{ id: 1, title: "牛乳を買う"}]);
 
-  useEffect(() => {
-    setMessage(`カウントは ${count} になりました`);
-  }, [count]);
+  const addTodo = () => {
+    const nextId = todos.length + 1;
+    setTodos([...todos,{ id: nextId, title: "新しいタスク"}]);
+  };
 
   return (
     <div>
-      <p>今のカウント: {count}</p>
-      <p>お知らせ: {message}</p>
-      <button onClick={() => setCount(count + 1)}>+1する</button>
+      <button onClick={addTodo}>タスクを追加</button>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
     </div>
   );
 }
