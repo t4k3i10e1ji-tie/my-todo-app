@@ -39,6 +39,7 @@ yarn-error.log*
 
 # mcp
 .mcp.json
+.codex/
 
 # typescript
 *.tsbuildinfo
