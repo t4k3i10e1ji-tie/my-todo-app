@@ -1,12 +1,12 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function Practice () {
+export default function Practice() {
   const [count, setCount] = useState(0);
   const [message, setMessage] = useState("");
-  
-  useEffect(()=> {
+
+  useEffect(() => {
     setMessage(`カウントは ${count} になりました`);
   }, [count]);
 
